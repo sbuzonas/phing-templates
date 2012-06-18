@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="FancyGuy-Docs" default="docs" description="Jenkins helper to generate documentation.">
+
+    <property file="${templates.includes.dir}/docs.properties" />
+
+    <target name="docs" depends="init, apigen, phpcb" />
+
+    <target name="-docs">
+        <if>
+            <equals arg1="${project.docs.run}" arg2="1" />
+            <then>
+                <phingcall target="docs" />
+            </then>
+            <else>
+                <echo message="Documentation is disabled for this project." />
+            </else>
+        </if>
+    </target>
+
+    <target name="docs-clean" depends="apigen-clean, phpcb-clean" />
+
+    <target name="apigen-clean" depends="init">
+        <delete dir="${docs.apigen.dir}" />
+        <mkdir dir="${docs.apigen.dir}" />
+    </target>
+
+    <target name="apigen">
+        <if>
+            <equals arg1="${docs.apigen.generate}" arg2="1" />
+            <then>
+                <apigen source="${src.dir}"
+                    destination="${docs.apigen.dir}"
+                    internal="${docs.apigen.internal}"
+                    deprecated="${docs.apigen.deprecated}"
+                    todo="${docs.apigen.todo}"
+                    download="${docs.apigen.download}" />
+            </then>
+            <else>
+                <echo message="Not generating docs with APIGEN." />
+            </else>
+        </if>
+    </target>
+
+    <target name="phpcb-clean" depends="init">
+        <delete dir="${build.codebrowser.dir}" />
+        <mkdir dir="${build.codebrowser.dir}" />
+    </target>
+
+    <target name="phpcb">
+        <if>
+            <equals arg1="${docs.phpcb.generate}" arg2="1" />
+            <then>
+                <exec executable="phpcb" logoutput="true" checkreturn="true" level="debug">
+                    <arg value="--log"/>
+                    <arg path="${build.logs.dir}"/>
+                    <arg value="--source"/>
+                    <arg path="${src.dir}"/>
+                    <arg value="--output"/>
+                    <arg path="${build.codebrowser.dir}"/>
+                </exec>
+            </then>
+            <else>
+                <echo message="Not generating PHP_CodeBrowser files." />
+            </else>
+        </if>
+    </target>
+
+</project>

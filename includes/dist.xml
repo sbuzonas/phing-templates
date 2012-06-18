@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="FancyGuy-Dist" default="dist" description="Jenkins helper to bundle sources in a distributable package.">
+
+    <property file="${templates.includes.dir}/dist.properties" />
+
+    <target name="-dist" depends="init">
+        <if>
+            <equals arg1="${project.dist.run}" arg2="1" />
+            <then>
+                <phingcall target="dist" />
+            </then>
+            <else>
+                <echo message="Packaging is disabled for this project." />
+            </else>
+        </if>
+    </target>
+
+    <target name="dist-clean" depends="init">
+        <delete dir="${build.dist.dir}" />
+        <mkdir dir="${build.dist.dir}" />
+    </target>
+
+    <target name="dist" depends="init">
+        <!--
+        Within the dist folder, create a subfolder by the name of the project, and a sub-subfolder
+        to that, also with the name of the project.
+        By creating this extrda level, we can then move the sub-subfolder into the zip file.  This filder
+        can then be extracted from the zip in one go (and it's how WordPress plugins and themes should be)
+        rather than the zip containing individual files as immediate children.
+        -->
+        <property name="build.dist.temp.dir" value="${build.dist.dir}/${project.name.safe}" />
+        <property name="build.dist.zip.root.dir" value="${build.dist.temp.dir}/${project.name.safe}" />
+
+        <mkdir dir="${build.dist.temp.dir}" />
+        <mkdir dir="${build.dist.zip.root.dir}" />
+        <copy todir="${build.dist.zip.root.dir}">
+            <fileset refid="zip.files" />
+        </copy>
+
+        <zip destfile="${build.dist.dir}/${project.name.safe}-${project.version}.zip">
+            <fileset dir="${build.dist.temp.dir}/" />
+        </zip>
+
+        <!--
+        We're finished with the temporary folder and it's subfolder, so delete them (deleting
+        the parent temp folder is enough).
+        -->
+        <delete dir="${build.dist.temp.dir}" />
+    </target>
+
+</project>

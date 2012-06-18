@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="FancyGuy-Verify" default="verify" description="Jenkins helper to do initial code verification.">
+
+    <property file="${templates.includes.dir}/verify.properties" />
+
+    <target name="verify" depends="init, phplint, phpcs" />
+    <target name="verify-ci" depends="init, phplint-ci, phpcs-ci" />
+    <target name="verify-clean" depends="init" unless="verify.cleaned">
+        <delete file="${build.logs.dir}/${verify.report.file}" />
+        <delete file="${build.logs.dir}/${verify.checkstyle.file}" />
+    </target>
+
+    <target name="-verify">
+        <if>
+            <equals arg1="${project.verify.run}" arg2="1" />
+            <then>
+                <phingcall target="verify-ci" />
+            </then>
+            <else>
+                <echo message="Verify is disabled for this project." />
+            </else>
+        </if>
+    </target>
+
+    <target name="phplint">
+        <phplint cachefile="${build.logs.dir}/lintcache.txt">
+            <fileset refid="php.files" />
+        </phplint>
+    </target>
+
+    <target name="phplint-ci">
+        <phplint cachefile="${build.logs.dir}/lintcache.txt" haltonfailure="true">
+            <fileset refid="php.files" />
+        </phplint>
+    </target>
+
+    <target name="phpcs">
+        <phpcodesniffer standard="${verify.coding.standard}" tabWidth="${verify.coding.tabwidth}" encoding="${verify.encoding}">
+            <fileset refid="${verify.fileset.refid}" />
+            <formatter type="default" usefile="false" />
+            <formatter type="emacs" outfile="${build.logs.dir}/${verify.report.file}" />
+        </phpcodesniffer>
+        <reflexive file="${build.logs.dir}/${verify.report.file}">
+            <filterchain>
+                <replaceregexp>
+                    <regexp pattern="${src.path}" replace="" />
+                </replaceregexp>
+            </filterchain>
+        </reflexive>
+    </target>
+
+    <target name="phpcs-ci">
+        <phpcodesniffer standard="${verify.coding.standard}" tabWidth="${verify.coding.tabwidth}" encoding="${verify.encoding}">
+            <fileset refid="${verify.fileset.refid}" />
+            <formatter type="emacs" outfile="${build.logs.dir}/${verify.report.file}" />
+            <formatter type="checkstyle" outfile="${build.logs.dir}/${verify.checkstyle.file}" />
+        </phpcodesniffer>
+        <reflexive file="${build.logs.dir/${verify.report.file}">
+            <filterchain>
+                <replaceregexp>
+                    <regexp pattern="${src.path}" replace="" />
+                </replaceregexp>
+            </filterchain>
+        </reflexive>
+    </target>
+
+</project>

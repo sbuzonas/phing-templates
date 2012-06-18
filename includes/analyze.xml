@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="FancyGuy-Analyze" default="analyze" description="Jenkins helper to perform static analysis of code.">
+
+    <property file="${templates.includes.dir}/analyze.properties" />
+
+    <target name="analyze" depends="init, phploc, pdepend, phpmd, phpcpd" />
+    <target name="analyze-ci" depends="init, phploc, pdepend, phpmd-ci, phpcpd" />
+
+    <target name="-analyze">
+        <if>
+            <equals arg1="${project.analyze.run}" arg2="1" />
+            <then>
+                <phingcall target="analyze-ci" />
+            </then>
+            <else>
+                <echo message="Analysis is disabled for this project." />
+            </else>
+        </if>
+    </target>
+
+    <target name="analyze-clean" depends="init" unless="analyze.cleaned">
+        <delete file="${build.logs.dir}/${analyze.phploc.file}" />
+        <delete file="${build.logs.dir}/${analyze.jdepend.file}" />
+        <delete file="${build.logs.dir}/${analyze.summary.file}" />
+        <delete file="${build.logs.dir}/dependencies.svg" />
+        <delete file="${build.logs.dir}/overview-pyramid.svg" />
+        <delete file="${build.logs.dir}/pmd.xml" />
+        <delete file="${build.logs.dir}/pmd-cpd.xml" />
+        <property name="analyze.cleaned" value="true" />
+    </target>
+
+    <target name="phploc" depends="init">
+        <exec executable="phploc" logoutput="true" checkreturn="true" level="debug">
+            <arg value="--log-csv" />
+            <arg value="${build.logs.dir}/${analyze.phploc.file}" />
+            <arg path="${src.dir}" />
+        </exec>
+    </target>
+
+    <target name="pdepend" depends="init">
+        <phpdepend>
+            <fileset refid="php.files" />
+            <logger type="jdepend-xml" outfile="${build.logs.dir}/${analyze.jdepend.file}" />
+            <logger type="summary-xml" outfile="${build.logs.dir}/${analyze.summary.file}" />
+            <logger type="jdepend-chart" outfile="${build.logs.dir}/dependencies.svg" />
+            <logger type="overview-pyramid" outfile="${build.logs.dir}/overview-pyramid.svg" />
+        </phpdepend>
+    </target>
+
+    <target name="phpmd" depends="init">
+        <phpmd rulesets="codesize,design,naming,unusedcode">
+            <fileset refid="${analyze.fileset.refid}" />
+        </phpmd>
+    </target>
+
+    <target name="phpmd-ci" depends="init">
+        <phpmd rulesets="codesize,design,naming,unusedcode">
+            <fileset refid="${analyze.fileset.refid}" />
+            <formatter type="xml" outfile="${build.logs.dir}/pmd.xml" />
+        </phpmd>
+    </target>
+
+    <target name="phpcpd" depends="init" description="Find duplicate code.">
+        <phpcpd minLines="10" minTokens="20">
+            <fileset refid="php.files" />
+            <formatter type="pmd" outfile="${build.logs.dir}/pmd-cpd.xml" />
+        </phpcpd>
+    </target>
+
+</project>

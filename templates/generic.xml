@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="FancyGuy-Generic" default="build" description="Generic Jenkins build script">
+
+    <php expression="dirname(dirname('${phing.file.fancyguy_generic}'))" returnProperty="fancyguy.basedir" />
+
+    <property name="templates.property.dir" value="${fancyguy.basedir}/properties" />
+    <property name="templates.template.dir" value="${fancyguy.basedir}/templates" />
+    <property name="templates.includes.dir" value="${fancyguy.basedir}/includes" />
+
+    <import file="${templates.includes.dir}/filesets.xml" />
+    <import file="${templates.includes.dir}/init.xml" />
+    <import file="${templates.includes.dir}/verify.xml" />
+    <import file="${templates.includes.dir}/analyze.xml" />
+    <import file="${templates.includes.dir}/docs.xml" />
+    <import file="${templates.includes.dir}/tests.xml" />
+    <import file="${templates.includes.dir}/dist.xml" />
+
+    <target name="build" depends="init, verify-ci, -analyze, -docs, -tests, -dist" />
+    <target name="clean" depends="init, verify-clean, analyze-clean, docs-clean, dist-clean" />
+
+</project>

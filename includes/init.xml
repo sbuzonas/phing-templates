@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="FancyGuy-Init" default="-setup-filesets" description="Jenkins helper to setup some sanitized defaults.">
+
+    <target name="init" depends="-load-properties, -standardize-paths, -setup-filesets" unless="project.initialized">
+        <property name="project.initialized" value="true" />
+    </target>
+
+    <target name="-standardize-paths">
+        <property name="project.dir" value="${project.basedir}" />
+
+        <property name="src.dir" value="${project.dir}/src" />
+        <property name="build.dir" value="${project.dir}/build" />
+        <property name="docs.dir" value="${project.dir}/docs" />
+        <property name="tests.dir" value="${project.dir}/tests" />
+
+        <php function="realpath" returnProperty="src.path">
+            <param value="${src.dir}/" />
+        </php>
+
+        <echo message="Assigning build directories to properties" level="debug" />
+        <property name="build.api.dir" value="${build.dir}/api" />
+        <property name="build.codebrowser.dir" value="${build.dir}/code-browser" />
+        <property name="build.dist.dir" value="${build.dir}/dist" />
+        <property name="build.logs.dir" value="${build.dir}/logs" />
+        <property name="build.pdepend.dir" value="${build.dir}/pdepend" />
+
+        <property name="docs.apigen.dir" value="${docs.dir}/apigen" />
+    </target>
+
+    <target name="-load-properties">
+        <!-- Take a project name and make it safe for use as a directory or file name -->
+        <php expression="str_replace(' ', '-', strtolower('${phing.project.name}'))" returnProperty="project.name.safe" />
+
+        <!-- Pull in the global / default properties -->
+        <property file="${templates.properties.dir}/global.properties" override="true" />
+
+        <!-- Set some defaults -->
+        <property name="project.analyze.run" value="1" />
+        <property name="project.docs.run" value="1" />
+        <property name="project.tests.run" value="1" />
+        <property name="project.dist.run" value="1" />
+
+        <!--
+        Pull in the per-project properties.
+        Since this build file is imported into other build files, this line
+        loads the build.properties file in reference to the project build.xml file
+        i.i. project/build/build.properties, and overrides the global defaults.
+        -->
+        <property file="project.properties" override="true" />
+
+        <!-- Sets a stable version (used in .htaccess) if one has not already been set. -->
+        <property name="project.stable.version" value="${project.version}" />
+    </target>
+
+</project>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="FancyGuy-Filesets" default="-setup-filesets" description="Jenkins helper to setup default filesets.">
+
+    <target name="-setup-filesets" depends="standard-filesets" />
+
+    <target name="standard-filesets">
+        <echo message="Initializing filesets" />
+        <patternset id="php">
+            <include name="**/*.php" />
+        </patternset>
+
+        <patternset id="tests">
+            <include name="**/*Test.php" />
+            <exclude name="**/Abstract*.php" />
+        </patternset>
+
+        <patternset id="js">
+            <!-- Don't include minified files as they won't pass code standards -->
+            <include name="**/*.js" />
+            <exclude name="**/*.min.js" />
+        </patternset>
+
+        <patternset id="css">
+            <!-- Don't include minified files as they won't pass code standards -->
+            <include name="**/*.css" />
+            <exclude name="**/*.min.css" />
+        </patternset>
+
+        <patternset id="zip">
+            <!-- Exclude Mac / Windows / version control artifacts from zip -->
+            <exclude name="**/.DS_Store" />
+            <exclude name="**/Thumbs.db" />
+            <exclude name=".svn/" />
+            <exclude name=".git/" />
+        </patternset>
+
+        <patternset id="svg">
+            <include name="**/*.svg" />
+        </patternset>
+
+        <fileset dir="${src.dir}" id="php.files">
+            <patternset refid="php" />
+        </fileset>
+
+        <fileset dir="${src.dir}" id="js.files">
+            <patternset refid="js" />
+        </fileset>
+
+        <fileset dir="${src.dir}" id="css.files">
+            <patternset refid="css" />
+        </fileset>
+
+        <fileset dir="${src.dir}" id="zip.files">
+            <patternset refid="zip" />
+        </fileset>
+
+        <fileset dir="${build.pdepend.dir}" id="pdepend.svg.files">
+            <patternset refid="svg" />
+        </fileset>
+
+        <fileset dir="${tests.dir}" id="test.files">
+            <patternset refid="tests" />
+        </fileset>
+
+    </target>
+
+</project>
