@@ -33,7 +33,7 @@
         <php expression="str_replace(' ', '-', strtolower('${phing.project.name}'))" returnProperty="project.name.safe" />
 
         <!-- Pull in the global / default properties -->
-        <property file="${templates.properties.dir}/global.properties" override="true" />
+        <property file="${templates.property.dir}/global.properties" override="true" />
 
         <!-- Set some defaults -->
         <property name="project.analyze.run" value="1" />
